@@ -1,0 +1,25 @@
+{
+  "name": "qr_attend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "dev": "nodemon main.js",
+    "migrate": "npx prisma migrate dev --name init"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^5.12.1",
+    "bcrypt": "^5.1.1",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "express-validator": "^7.0.1",
+    "jsonwebtoken": "^9.0.2",
+    "prisma": "^5.12.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}
