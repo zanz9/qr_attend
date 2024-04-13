@@ -2,17 +2,17 @@ const {validationResult} = require("express-validator");
 const AuthService = require("../service/AuthService");
 const ApiError = require("../../../exceptions/ApiError");
 
- class AuthController {
+class AuthController {
     async register(req, res, next) {
         try {
             const errors = validationResult(req)
             if (!errors.isEmpty()) {
-                return next(ApiError.BadRequest('Ошибка при валидации', errors.array()))
+                return next(ApiError.BadRequest('Неправильно переданы данные', errors.array()))
             }
             const {email, firstName, lastName, password} = req.body
             const userData = await AuthService.register(email, firstName, lastName, password)
             res.cookie('refreshToken', userData.refreshToken, {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true})
-            return res.json(userData)
+            return res.status(200).json({...userData, message: 'Регистрация прошла успешно'})
         } catch (e) {
             next(e)
         }
@@ -23,7 +23,7 @@ const ApiError = require("../../../exceptions/ApiError");
             const {email, password} = req.body
             const userData = await AuthService.login(email, password)
             res.cookie('refreshToken', userData.refreshToken, {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true})
-            return res.json(userData)
+            return res.status(200).json(userData)
         } catch (e) {
             next(e)
         }
@@ -34,7 +34,7 @@ const ApiError = require("../../../exceptions/ApiError");
             const {refreshToken} = req.cookies
             const token = await AuthService.logout(refreshToken)
             res.clearCookie('refreshToken')
-            return res.json(token)
+            return res.status(200).json(token)
         } catch (e) {
             next(e)
         }
@@ -45,7 +45,7 @@ const ApiError = require("../../../exceptions/ApiError");
             const {refreshToken} = req.cookies
             const userData = await AuthService.refresh(refreshToken)
             res.cookie('refreshToken', userData.refreshToken, {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true})
-            return res.json(userData)
+            return res.status(200).json(userData)
         } catch (e) {
             next(e)
         }

@@ -4,13 +4,15 @@ const cors = require('cors')
 const cookieParser = require("cookie-parser");
 const port = 3000
 
+require('dotenv').config()
+
 const exceptionMiddleware = require('./router/exception')
 
 app.use(express.json())
 app.use(cookieParser())
 app.use(cors({
+    origin: process.env.CLIENT_URL,
     credentials: true,
-    origin: process.env.CLIENT_URL
 }))
 
 app.use('/api', require('./router/router'))

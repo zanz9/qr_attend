@@ -4,7 +4,7 @@ import router from "@/router/index.js";
 
 const api = axios.create({
     withCredentials: true,
-    baseURL: 'http://localhost:8080/api'
+    baseURL: 'http://localhost:3000/api'
 })
 
 api.interceptors.response.use(response => {
@@ -13,7 +13,7 @@ api.interceptors.response.use(response => {
     const originalRequest = error.config
     if (error.response.status === 403 && !originalRequest._retry) {
         originalRequest._retry = true
-        const response = await api.get('/auth/refresh')
+        const response = await api.get('/refresh')
         localStorage.setItem('accessToken', response.data['accessToken'])
         originalRequest.headers['Authorization'] = `Bearer ${response.data['accessToken']}`
         return api(originalRequest)

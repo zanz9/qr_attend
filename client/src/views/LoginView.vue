@@ -15,8 +15,8 @@ const form = reactive({
   <v-card
       class="mx-auto pa-2"
       max-width="344"
-      title="Вход"
   >
+    <v-card-title class="text-center">Вход</v-card-title>
     <v-container>
 
       <v-text-field
@@ -39,7 +39,7 @@ const form = reactive({
 
     <v-card-actions>
       <v-btn>
-        <RouterLink active-class="text-red" to="/register"> Зарегистрироваться</RouterLink>
+        <RouterLink class="text-white text-decoration-none cursor-pointer" to="/register"> Зарегистрироваться</RouterLink>
       </v-btn>
       <v-spacer></v-spacer>
 
