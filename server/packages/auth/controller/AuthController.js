@@ -23,7 +23,7 @@ class AuthController {
             const {email, password} = req.body
             const userData = await AuthService.login(email, password)
             res.cookie('refreshToken', userData.refreshToken, {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true})
-            return res.status(200).json(userData)
+            return res.status(200).json({...userData, message: 'Авторизация прошла успешно'})
         } catch (e) {
             next(e)
         }
@@ -32,9 +32,9 @@ class AuthController {
     async logout(req, res, next) {
         try {
             const {refreshToken} = req.cookies
-            const token = await AuthService.logout(refreshToken)
+            const userData = await AuthService.logout(refreshToken)
             res.clearCookie('refreshToken')
-            return res.status(200).json(token)
+            return res.status(200).json({...userData, message: "Вы успешно вышли"})
         } catch (e) {
             next(e)
         }

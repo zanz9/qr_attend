@@ -33,11 +33,11 @@ class AuthService {
     async login(email, password) {
         const user = await this.userDB.findFirst({where: {email}})
         if (!user) {
-            throw ApiError.UnauthorizedError()
+            throw ApiError.BadRequest('Непральные данные для входа')
         }
         const isPassEquals = await bcrypt.compare(password, user.password)
         if (!isPassEquals) {
-            throw ApiError.UnauthorizedError()
+            throw ApiError.BadRequest('Непральные данные для входа')
         }
 
         const userDto = new UserDto(user)
@@ -47,7 +47,8 @@ class AuthService {
     }
 
     async logout(refreshToken) {
-        return await TokenService.removeToken(refreshToken)
+        const userData = await TokenService.removeToken(refreshToken)
+        return new UserDto(userData)
     }
 
     async refresh(refreshToken) {

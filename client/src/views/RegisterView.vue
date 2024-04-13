@@ -2,17 +2,22 @@
 import {reactive, ref} from "vue";
 import api from "@/axios/api.js";
 import {mdiEye, mdiEyeOff} from "@mdi/js";
+import router from "@/router/index.js";
+import {RouterNames} from "@/router/routes.js";
+import Logger from "@/logger.js";
 
 const rules = {
-  required: value => !!value || 'Required.',
-  passwordMin: value => value.length >= 8 || 'Min 8 characters',
+  required: value => !!value || 'Заполните поле.',
+  passwordMin: value => value.length >= 8 || 'Минимум 8 символов',
   emailValid: value => {
     const pattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-    return pattern.test(value) || 'Invalid e-mail.'
+    return pattern.test(value) || 'Неправльный формат почты.'
   }
 }
-const message = ref('')
-const passwordVisible = ref(false)
+const message = reactive({
+  text: '',
+  isError: false
+})
 
 const form = reactive({
   firstName: '',
@@ -20,27 +25,35 @@ const form = reactive({
   email: '',
   password: ''
 })
+const passwordVisible = ref(false)
+const disableButton = ref(false)
 
 async function register() {
   if (!form.firstName || !form.lastName || !form.email || !form.password) {
-    return message.value = 'Заполните все обязательные поля'
+    message.text = 'Заполните все обязательные поля'
+    message.isError = true
+    return
   }
   try {
+    disableButton.value = true
     const {data} = await api.post('/register', form)
     const accessToken = data.accessToken
     localStorage.setItem('accessToken', accessToken)
-    message.value = data.message
+    message.text = data.message
+    message.isError = false
+    await router.push({name: RouterNames.Home})
   } catch (e) {
     const {status, data} = e.response
-    console.log(status, data.message)
+    Logger.log(status, data)
     message.value = data.message
+    message.isError = true
+  } finally {
+    disableButton.value = false
   }
 }
-
 </script>
 
 <template>
-
   <v-card
       variant="tonal"
       class="mx-auto pa-3 py-6"
@@ -87,18 +100,18 @@ async function register() {
       ></v-text-field>
     </v-container>
 
-    <v-card-text class="text-red" v-if="message">
-      {{ message }}
+    <v-card-text :class="message.isError ? 'text-red' : 'text-green'" v-if="message.text">
+      {{ message.text }}
     </v-card-text>
 
     <v-divider></v-divider>
 
     <v-card-actions>
-      <v-btn>
-        <RouterLink class="text-white text-decoration-none cursor-pointer" to="/login"> Войти</RouterLink>
+      <v-btn @click="()=>{router.push({name: RouterNames.Login})}">
+        Войти
       </v-btn>
       <v-spacer/>
-      <v-btn color="blue" @click="register">
+      <v-btn color="blue" @click="register" :disabled="disableButton">
         Зарегистрироваться
       </v-btn>
     </v-card-actions>
