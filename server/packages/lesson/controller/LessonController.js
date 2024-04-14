@@ -26,6 +26,34 @@ class LessonController {
             next(e)
         }
     }
+
+    async getLessons(req, res, next) {
+        try {
+            const lessons = await LessonService.getLessons()
+            return res.json(lessons)
+        } catch (e) {
+            next(e)
+        }
+    }
+
+    async getLessonNow(req, res, next) {
+        try {
+            const lesson = await LessonService.getLessonNow()
+            return res.json(lesson)
+        } catch (e) {
+            next(e)
+        }
+    }
+
+    async getLesson(req, res, next) {
+        try {
+            const {uuid} = req.params
+            const lesson = await LessonService.getLesson(uuid)
+            return res.json(lesson)
+        } catch (e) {
+            next(e)
+        }
+    }
 }
 
 module.exports = new LessonController()

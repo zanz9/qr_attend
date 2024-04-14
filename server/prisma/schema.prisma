@@ -33,7 +33,7 @@ model Lessons {
   startedAt DateTime
   expiresIn DateTime
 
-  user Users @relation(fields: [createdFrom], references: [id])
+  teacher Users @relation(fields: [createdFrom], references: [id])
   attends Attends[]
 }
 

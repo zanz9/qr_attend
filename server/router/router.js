@@ -31,6 +31,9 @@ router.post('/lesson',
     body('endDate').isISO8601().toDate(),
     LessonController.create)
 router.delete('/lesson/:id', LessonController.delete)
+router.get('/lessons', LessonController.getLessons)
+router.get('/lesson', LessonController.getLessonNow)
+router.get('/lesson/:uuid', LessonController.getLesson)
 
 
 module.exports = router

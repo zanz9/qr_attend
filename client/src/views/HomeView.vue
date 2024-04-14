@@ -47,7 +47,7 @@ function snackbarShow(text, isError = false) {
     <v-navigation-drawer v-model="drawer" temporary>
       <v-divider class="pb-2"/>
       <v-list-item link :to="{name: RouterNames.CreateLesson}" title="Создать Урок"></v-list-item>
-      <v-list-item link title="Список уроков"></v-list-item>
+      <v-list-item link :to="{name: RouterNames.Lessons}" title="Список уроков"></v-list-item>
 
       <template v-slot:append>
         <div class="pa-2">
