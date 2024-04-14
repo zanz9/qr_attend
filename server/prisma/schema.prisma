@@ -20,6 +20,7 @@ model Users {
   firstName String
   lastName String
   refreshToken String? @db.VarChar(255)
+  isTeacher Boolean @default(false)
 
   lessons Lessons[]
   attends Attends[]

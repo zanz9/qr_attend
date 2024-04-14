@@ -15,16 +15,14 @@ class TokenService {
     }
 
     validateAccessToken(token) {
-        try {
-            return jwt.verify(token, process.env.JWT_ACCESS_SECRET)
-        } catch (e) {
-            return null
-        }
+        const userData = jwt.verify(token, process.env.JWT_ACCESS_SECRET)
+        return new UserDto(userData)
     }
 
     validateRefreshToken(token) {
         try {
-            return jwt.verify(token, process.env.JWT_REFRESH_SECRET)
+            const userData = jwt.verify(token, process.env.JWT_REFRESH_SECRET)
+            return new UserDto(userData)
         } catch (e) {
             return null
         }
