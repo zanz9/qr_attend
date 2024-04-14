@@ -1,4 +1,5 @@
 const {PrismaClient} = require("@prisma/client");
+const ApiError = require("../../../exceptions/ApiError");
 
 class LessonService {
     prisma = new PrismaClient()
@@ -23,7 +24,7 @@ class LessonService {
         })
     }
 
-    async getLessons() {
+    async getLessonsFuture(skip, take) {
         return this.lessonDB.findMany({
             where: {
                 startedAt: {
@@ -46,11 +47,13 @@ class LessonService {
                     }
                 },
                 attends: false
-            }
+            },
+            take: take ? take : 100,
+            skip: skip ? skip : 0,
         })
     }
 
-    async getLessonNow() {
+    async getLessonNow(skip, take) {
         return this.lessonDB.findMany({
             where: {
                 AND: [{
@@ -79,14 +82,56 @@ class LessonService {
                     }
                 },
                 attends: false
-            }
+            },
+            take: take ? take : 100,
+            skip: skip ? skip : 0,
+        })
+    }
+
+    async getLessonsPast(skip, take) {
+        return this.lessonDB.findMany({
+            where: {
+                expiresIn: {
+                    lte: new Date()
+                }
+            },
+            orderBy: [
+                {
+                    expiresIn: 'desc'
+                },
+                {
+                    startedAt: 'desc'
+                }
+            ],
+            include: {
+                teacher: {
+                    select: {
+                        firstName: true,
+                        lastName: true
+                    }
+                },
+                attends: false
+            },
+            take: take ? take : 100,
+            skip: skip ? skip : 0,
         })
     }
 
     async getLesson(uuid) {
         return this.lessonDB.findUnique({
             where: {
-                uuid
+                uuid,
+                AND: [
+                    {
+                        startedAt: {
+                            lte: new Date()
+                        },
+                    }, {
+                        expiresIn: {
+                            gte: new Date()
+                        }
+                    },
+                ]
             },
             include: {
                 teacher: {
@@ -95,8 +140,32 @@ class LessonService {
                         lastName: true
                     }
                 },
-                attends: true
+                attends: {
+                    include: {
+                        user: {
+                            select: {
+                                firstName: true,
+                                lastName: true
+                            }
+                        },
+                        lesson: false
+                    }
+                }
             }
+        })
+    }
+
+    async scan(lessonId, userId) {
+        const user = await this.prisma.users.findUnique({
+            where: {
+                id: userId
+            }
+        })
+        if (!user || user.isTeacher) {
+            throw ApiError.BadRequest('User not found')
+        }
+        return this.prisma.attends.create({
+            data: {lessonId, userId}
         })
     }
 }

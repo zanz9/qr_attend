@@ -24,16 +24,24 @@ router.get('/refresh', AuthController.refresh)
 router.get('/teachers', TeacherController.getTeachers)
 
 // LESSONS
-router.post('/lesson',
+const lessonRouter = Router()
+lessonRouter.post('/',
     body('name').isLength({min: 2, max: 32}),
     body('teacherId').isNumeric(),
     body('startDate').isISO8601().toDate(),
     body('endDate').isISO8601().toDate(),
     LessonController.create)
-router.delete('/lesson/:id', LessonController.delete)
-router.get('/lessons', LessonController.getLessons)
-router.get('/lesson', LessonController.getLessonNow)
-router.get('/lesson/:uuid', LessonController.getLesson)
+lessonRouter.delete('/:id', LessonController.delete)
 
+lessonRouter.get('/now', LessonController.getLessonNow)
+lessonRouter.get('/future', LessonController.getLessonsFuture)
+lessonRouter.get('/past', LessonController.getLessonsPast)
+
+lessonRouter.get('/:uuid', LessonController.getLesson)
+lessonRouter.get('/', LessonController.scan)
+
+
+const authMiddleware = require('../packages/auth/middleware/authMiddleware')
+router.use('/lesson',  lessonRouter)
 
 module.exports = router

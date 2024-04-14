@@ -1,10 +1,10 @@
 import HomeView from "@/views/HomeView.vue";
-import LoginView from "@/views/LoginView.vue";
-import RegisterView from "@/views/RegisterView.vue";
-import CreateLessonView from "@/views/CreateLessonView.vue";
-import LessonsView from "@/views/LessonsView.vue";
-import LessonView from "@/views/LessonView.vue";
-
+import LoginView from "@/views/auth/LoginView.vue";
+import RegisterView from "@/views/auth/RegisterView.vue";
+import CreateLessonView from "@/views/lesson/CreateLessonView.vue";
+import LessonsView from "@/views/lesson/LessonsView.vue";
+import LessonView from "@/views/lesson/LessonView.vue";
+import PastLessonsView from "@/views/lesson/PastLessonsView.vue";
 
 export class RouterNames {
     static Login = 'Login'
@@ -13,6 +13,7 @@ export class RouterNames {
     static CreateLesson = 'CreateLesson'
     static Lessons = 'Lessons'
     static Lesson = 'Lesson'
+    static PastLesson = 'PastLesson'
 }
 
 export const routeList = [
@@ -20,6 +21,7 @@ export const routeList = [
         path: '/',
         name: RouterNames.Home,
         component: HomeView,
+        redirect: {name: RouterNames.Lessons},
         children: [
             {
                 path: 'create-lesson',
@@ -35,7 +37,12 @@ export const routeList = [
                 path: 'lesson/:uuid',
                 name: RouterNames.Lesson,
                 component: LessonView
-            }
+            },
+            {
+                path: '/past-lessons',
+                name: RouterNames.PastLesson,
+                component: PastLessonsView
+            },
         ]
     },
     {

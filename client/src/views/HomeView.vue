@@ -22,18 +22,6 @@ async function logout() {
 }
 
 const drawer = ref(false)
-const snackbar = reactive({
-  show: false,
-  text: '',
-  timeout: 3000,
-  color: 'success'
-})
-
-function snackbarShow(text, isError = false) {
-  snackbar.text = text
-  snackbar.show = true
-  snackbar.color = isError ? 'error' : 'primary'
-}
 
 </script>
 
@@ -48,6 +36,7 @@ function snackbarShow(text, isError = false) {
       <v-divider class="pb-2"/>
       <v-list-item link :to="{name: RouterNames.CreateLesson}" title="Создать Урок"></v-list-item>
       <v-list-item link :to="{name: RouterNames.Lessons}" title="Список уроков"></v-list-item>
+      <v-list-item link :to="{name: RouterNames.PastLesson}" title="Прошлые уроки"></v-list-item>
 
       <template v-slot:append>
         <div class="pa-2">
@@ -58,24 +47,7 @@ function snackbarShow(text, isError = false) {
       </template>
     </v-navigation-drawer>
     <v-main>
-      <RouterView @snackbarShow="snackbarShow"/>
-      <v-snackbar
-          :timeout="snackbar.timeout"
-          v-model="snackbar.show"
-          :color="snackbar.color"
-      >
-        {{ snackbar.text }}
-
-        <template v-slot:actions>
-          <v-btn
-              color="black"
-              variant="text"
-              @click="snackbar.show = false"
-          >
-            X
-          </v-btn>
-        </template>
-      </v-snackbar>
+      <RouterView/>
     </v-main>
   </v-app>
 </template>

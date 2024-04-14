@@ -1,6 +1,7 @@
 const ApiError = require("../../../exceptions/ApiError");
 const {validationResult} = require("express-validator");
 const LessonService = require("../service/LessonService");
+const TokenService = require("../../auth/service/TokenService");
 
 class LessonController {
     async create(req, res, next) {
@@ -27,9 +28,12 @@ class LessonController {
         }
     }
 
-    async getLessons(req, res, next) {
+    async getLessonsFuture(req, res, next) {
         try {
-            const lessons = await LessonService.getLessons()
+            const {page, limit} = req.query
+            const skip = (page - 1) * limit || 0
+            const take = parseInt(limit) || 0
+            const lessons = await LessonService.getLessonsFuture(skip, take)
             return res.json(lessons)
         } catch (e) {
             next(e)
@@ -38,8 +42,23 @@ class LessonController {
 
     async getLessonNow(req, res, next) {
         try {
-            const lesson = await LessonService.getLessonNow()
+            const {page, limit} = req.query
+            const skip = (page - 1) * limit || 0
+            const take = parseInt(limit) || 0
+            const lesson = await LessonService.getLessonNow(skip, take)
             return res.json(lesson)
+        } catch (e) {
+            next(e)
+        }
+    }
+
+    async getLessonsPast(req, res, next) {
+        try {
+            const {page, limit} = req.query
+            const skip = (page - 1) * limit || 0
+            const take = parseInt(limit) || 0
+            const lessons = await LessonService.getLessonsPast(skip, take)
+            return res.json(lessons)
         } catch (e) {
             next(e)
         }
@@ -49,6 +68,22 @@ class LessonController {
         try {
             const {uuid} = req.params
             const lesson = await LessonService.getLesson(uuid)
+            return res.json(lesson)
+        } catch (e) {
+            next(e)
+        }
+    }
+
+    async scan(req, res, next) {
+        try {
+            const lessonId = req.query.uuid
+            const refreshToken = req.cookies.refreshToken
+            if (!refreshToken) {
+                return next(ApiError.Forbidden("Не авторизирован"))
+            }
+            const userData = TokenService.validateRefreshToken(refreshToken)
+            const userId = userData.id
+            const lesson = await LessonService.scan(lessonId, userId)
             return res.json(lesson)
         } catch (e) {
             next(e)
