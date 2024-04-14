@@ -34,3 +34,5 @@ client/*.sw?
 
 client/*.tsbuildinfo
 client/.vscode
+
+server/dist
