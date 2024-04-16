@@ -37,4 +37,4 @@ client/.vscode
 
 server/dist
 
-server/prisma/migrations    
+server/prisma/migrations

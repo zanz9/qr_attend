@@ -4,14 +4,14 @@ import {RouterNames} from "@/router/routes.js";
 import router from "@/router/index.js";
 import Logger from "@/logger.js";
 import {mdiMenu} from "@mdi/js";
-import {nextTick, onMounted, reactive, ref} from "vue";
+import {nextTick, onMounted,  ref} from "vue";
+import {isAdmin, isTeacher} from "@/infoParser.js";
 
 const logoutBtnClicked = ref(false)
 
-const role = reactive({
-  isAdmin: JSON.parse(localStorage.getItem('isAdmin') )|| false,
-  isTeacher: JSON.parse(localStorage.getItem('isTeacher')) || false,
-  isStudent: JSON.parse(localStorage.getItem('isStudent')) || true,
+const info = ref({
+  firstName: '',
+  lastName: '',
 })
 
 onMounted(async () => {
@@ -20,10 +20,8 @@ onMounted(async () => {
       'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
     }
   })
-  localStorage.setItem('isAdmin', data.isAdmin)
-  localStorage.setItem('isTeacher', data.teacher != null)
-  localStorage.setItem('isStudent', data.student != null)
-  await nextTick()
+  info.value = data
+  localStorage.setItem('info', JSON.stringify(data))
 })
 
 async function logout() {
@@ -51,9 +49,15 @@ const drawer = ref(false)
     </v-app-bar>
 
     <v-navigation-drawer v-model="drawer" temporary>
+      <v-list-item nav class="py-4 px-4" :to="{name: RouterNames.Profile}">
+        <v-avatar color="red" size="32" class="mr-2">
+          <span>{{ info.lastName[0] }}{{ info.firstName[0] }}</span>
+        </v-avatar>
+        <span> {{ info.lastName }} {{ info.firstName }}</span>
+      </v-list-item>
       <v-divider class="pb-2"/>
 
-      <v-list-item v-if="role.isTeacher || role.isAdmin" link :to="{name: RouterNames.CreateLesson}"
+      <v-list-item v-if="isTeacher() || isAdmin()" link :to="{name: RouterNames.CreateLesson}"
                    title="Создать Урок"></v-list-item>
       <v-list-item link :to="{name: RouterNames.Lessons}" title="Список уроков"></v-list-item>
       <v-list-item link :to="{name: RouterNames.PastLesson}" title="Прошлые уроки"></v-list-item>

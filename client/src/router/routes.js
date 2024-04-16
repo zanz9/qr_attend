@@ -5,6 +5,7 @@ import CreateLessonView from "@/views/lesson/CreateLessonView.vue";
 import LessonsView from "@/views/lesson/LessonsView.vue";
 import LessonView from "@/views/lesson/LessonView.vue";
 import PastLessonsView from "@/views/lesson/PastLessonsView.vue";
+import ProfileView from "@/views/profile/ProfileView.vue";
 
 export class RouterNames {
     static Login = 'Login'
@@ -14,6 +15,7 @@ export class RouterNames {
     static Lessons = 'Lessons'
     static Lesson = 'Lesson'
     static PastLesson = 'PastLesson'
+    static Profile = 'Profile'
 }
 
 export const routeList = [
@@ -43,6 +45,11 @@ export const routeList = [
                 name: RouterNames.PastLesson,
                 component: PastLessonsView
             },
+            {
+                path: '/profile',
+                name: RouterNames.Profile,
+                component: ProfileView
+            }
         ]
     },
     {
