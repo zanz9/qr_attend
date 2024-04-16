@@ -26,16 +26,16 @@ onMounted(async () => {
     }
   })
   console.log(data)
-  isLoaded.value = true
-  if (!data) {
-    isLessonEnd.value = true
-  }
+  isLessonEnd.value = !data.current;
+
   lesson.name = data.name
   lesson.teacher.firstName = data.teacher.firstName
   lesson.teacher.lastName = data.teacher.lastName
   lesson.startedAt = data.startedAt
   lesson.expiresIn = data.expiresIn
   lesson.attends = data.attends
+
+  isLoaded.value = true
 })
 </script>
 
@@ -50,17 +50,24 @@ onMounted(async () => {
         <div v-else>
           <h1>{{ lesson.name }}</h1>
           <h2> Учитель: {{ lesson.teacher.lastName }} {{ lesson.teacher.firstName }}</h2>
-          <QrcodeVuefrom
-              :value="`${api.getUri()}/lesson?uuid=${route.params.uuid}`"
-              level="M"
-              :size="300"
-              render-as="svg"
-              class="ma-4"
-          />
-          <div v-if="lesson.attends.length">
-            <h3>Студенты:</h3>
-            <v-list-item v-for="attend in lesson.attends">{{ attend.user.firstName }} {{ attend.user.lastName }}</v-list-item>
-          </div>
+         <v-card color="white" max-width="370" max-height="370">
+           <QrcodeVuefrom
+               class="mt-2"
+               :value="`${api.getUri()}/lesson?uuid=${route.params.uuid}`"
+               level="M"
+               :size="350"
+               render-as="svg"
+           />
+         </v-card>
+        </div>
+        <div v-if="lesson.attends.length">
+          <h3>Студенты:</h3>
+          <v-list-item v-for="attend in lesson.attends">
+            <div>{{ attend.user.firstName }} {{ attend.user.lastName }}
+              {{ new Date(attend.loginTime).toLocaleString() }}
+            </div>
+
+          </v-list-item>
         </div>
       </div>
     </v-col>

@@ -4,7 +4,8 @@ import router from "@/router/index.js";
 
 const api = axios.create({
     withCredentials: true,
-    baseURL: 'http://localhost:3000/api'
+    baseURL: 'http://localhost:3000/api',
+    // baseURL: 'http://95.141.205.61:3000/api',
 })
 
 api.interceptors.response.use(response => {

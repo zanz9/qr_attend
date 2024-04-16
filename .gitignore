@@ -36,3 +36,5 @@ client/*.tsbuildinfo
 client/.vscode
 
 server/dist
+
+server/prisma/migrations    

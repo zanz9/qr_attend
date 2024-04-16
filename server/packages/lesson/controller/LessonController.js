@@ -2,6 +2,8 @@ const ApiError = require("../../../exceptions/ApiError");
 const {validationResult} = require("express-validator");
 const LessonService = require("../service/LessonService");
 const TokenService = require("../../auth/service/TokenService");
+const AuthService = require("../../auth/service/AuthService");
+const TeacherService = require("../../teacher/service/TeacherService");
 
 class LessonController {
     async create(req, res, next) {
@@ -10,8 +12,14 @@ class LessonController {
             if (!errors.isEmpty()) {
                 return next(ApiError.BadRequest('Неправильно переданы данные', errors.array()))
             }
-            const {name, teacherId, startDate, endDate} = req.body
-            const lesson = await LessonService.create(name, teacherId, startDate, endDate)
+            const userId = req.user.id
+            const {name, cabinet, startDate, endDate, opId} = req.body
+            let teacherId = req.body.teacherId
+            if (teacherId === 0) {
+                teacherId = userId
+            }
+            console.log(name, cabinet, startDate, endDate, opId, teacherId)
+            const lesson = await LessonService.create(name, cabinet, teacherId, startDate, endDate, opId)
             return res.status(201).json({...lesson, message: "Урок создан"})
         } catch (e) {
             next(e)
@@ -33,8 +41,23 @@ class LessonController {
             const {page, limit} = req.query
             const skip = (page - 1) * limit || 0
             const take = parseInt(limit) || 0
-            const lessons = await LessonService.getLessonsFuture(skip, take)
-            return res.json(lessons)
+
+            const user = req.user
+            const userData = await AuthService.getUserById(user.id)
+            if (userData.teacher != null) {
+                const facultyId = userData.teacher.facultyId
+                const lessons = await LessonService.getLessonsFaculty('future', skip, take, facultyId)
+                return res.json(lessons)
+            }
+            if (userData.student != null) {
+                const opId = userData.student.opId
+                const lessons = await LessonService.getLessonsOP('future', skip, take, opId)
+                return res.json(lessons)
+            }
+            if (userData.isAdmin) {
+                const lessons = await LessonService.getLessons('future', skip, take)
+                return res.json(lessons)
+            }
         } catch (e) {
             next(e)
         }
@@ -45,8 +68,23 @@ class LessonController {
             const {page, limit} = req.query
             const skip = (page - 1) * limit || 0
             const take = parseInt(limit) || 0
-            const lesson = await LessonService.getLessonNow(skip, take)
-            return res.json(lesson)
+
+            const user = req.user
+            const userData = await AuthService.getUserById(user.id)
+            if (userData.teacher != null) {
+                const facultyId = userData.teacher.facultyId
+                const lessons = await LessonService.getLessonsFaculty('now', skip, take, facultyId)
+                return res.json(lessons)
+            }
+            if (userData.student != null) {
+                const opId = userData.student.opId
+                const lessons = await LessonService.getLessonsOP('now', skip, take, opId)
+                return res.json(lessons)
+            }
+            if (userData.isAdmin) {
+                const lessons = await LessonService.getLessons('now', skip, take)
+                return res.json(lessons)
+            }
         } catch (e) {
             next(e)
         }
@@ -57,8 +95,23 @@ class LessonController {
             const {page, limit} = req.query
             const skip = (page - 1) * limit || 0
             const take = parseInt(limit) || 0
-            const lessons = await LessonService.getLessonsPast(skip, take)
-            return res.json(lessons)
+
+            const user = req.user
+            const userData = await AuthService.getUserById(user.id)
+            if (userData.teacher != null) {
+                const facultyId = userData.teacher.facultyId
+                const lessons = await LessonService.getLessonsFaculty('past', skip, take, facultyId)
+                return res.json(lessons)
+            }
+            if (userData.student != null) {
+                const opId = userData.student.opId
+                const lessons = await LessonService.getLessonsOP('past', skip, take, opId)
+                return res.json(lessons)
+            }
+            if (userData.isAdmin) {
+                const lessons = await LessonService.getLessons('past', skip, take)
+                return res.json(lessons)
+            }
         } catch (e) {
             next(e)
         }
@@ -68,6 +121,8 @@ class LessonController {
         try {
             const {uuid} = req.params
             const lesson = await LessonService.getLesson(uuid)
+            const now = new Date()
+            lesson.current = lesson.startedAt.valueOf() < now.valueOf() && now.valueOf() < lesson.expiresIn.valueOf();
             return res.json(lesson)
         } catch (e) {
             next(e)

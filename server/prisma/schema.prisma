@@ -20,20 +20,63 @@ model Users {
   firstName String
   lastName String
   refreshToken String? @db.VarChar(255)
-  isTeacher Boolean @default(false)
+  teacherId Int?
+  studentId Int?
+  isAdmin Boolean @default(false)
 
+  teacher Teacher? @relation(fields: [teacherId], references: [id])
+  student Student? @relation(fields: [studentId], references: [id])
   lessons Lessons[]
   attends Attends[]
+}
+
+model Teacher {
+  id Int @id @default(autoincrement())
+  facultyId Int
+
+  faculty Faculty @relation(fields: [facultyId], references: [id])
+  users Users[]
+}
+
+model Student {
+  id Int @id @default(autoincrement())
+  opId Int
+  course Int @default(1)
+
+  op OP @relation(fields: [opId], references: [id])
+  users Users[]
+}
+
+model Faculty {
+  id Int @id @default(autoincrement())
+  name String
+
+  teacher Teacher[]
+  op OP[]
+}
+
+model OP {
+  id Int @id @default(autoincrement())
+  name String
+  facultyId Int
+
+  faculty Faculty @relation(fields: [facultyId], references: [id])
+  student Student[]
+  lessons Lessons[]
 }
 
 model Lessons {
   uuid String @id @default(uuid())
   name String
+  cabinet String
+  opId Int
   createdFrom Int
   startedAt DateTime
   expiresIn DateTime
+  createdAt DateTime @default(now())
 
   teacher Users @relation(fields: [createdFrom], references: [id])
+  op OP @relation(fields: [opId], references: [id])
   attends Attends[]
 }
 
@@ -41,6 +84,7 @@ model Attends {
   id Int @id @default(autoincrement())
   userId Int
   lessonId String
+  loginTime DateTime @default(now())
 
   user Users @relation(fields: [userId], references: [id])
   lesson Lessons @relation(fields: [lessonId], references: [uuid])

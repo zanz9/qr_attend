@@ -1,5 +1,5 @@
 <script setup>
-import {reactive, ref} from "vue";
+import {onMounted, reactive, ref, watch} from "vue";
 import api from "@/axios/api.js";
 import {mdiEye, mdiEyeOff} from "@mdi/js";
 import router from "@/router/index.js";
@@ -23,12 +23,31 @@ const form = reactive({
   firstName: '',
   lastName: '',
   email: '',
-  password: ''
+  password: '',
 })
 const passwordVisible = ref(false)
 const disableButton = ref(false)
+const faculty = ref({name: 'Выберите факультет'})
+const faculties = ref([])
+const ops = ref([])
+const op = ref({name: 'Выберите программу'})
+
+onMounted(async () => {
+  const {data} = await api.get('/faculties')
+  faculties.value = data
+})
+
+watch(faculty, async () => {
+  const {data} = await api.get('/op', {
+    params: {
+      facultyId: faculty.id
+    }
+  })
+  ops.value = data
+})
 
 async function register() {
+  console.log(form)
   if (!form.firstName || !form.lastName || !form.email || !form.password) {
     message.text = 'Заполните все обязательные поля'
     message.isError = true
@@ -36,7 +55,10 @@ async function register() {
   }
   try {
     disableButton.value = true
-    const {data} = await api.post('/register', form)
+    const {data} = await api.post('/register', {
+      ...form,
+      opId: op.value.id,
+    })
     const accessToken = data.accessToken
     localStorage.setItem('accessToken', accessToken)
     message.text = data.message
@@ -76,6 +98,29 @@ async function register() {
           variant="underlined"
           :rules="[rules.required]"
       ></v-text-field>
+
+      <v-select
+          v-model="faculty"
+          :items="faculties"
+          item-title="name"
+          item-value="id"
+          persistent-hint
+          return-object
+          single-line
+          variant="solo-filled"
+          no-data-text="Загрузка..."
+      />
+      <v-select
+          v-model="op"
+          :items="ops"
+          item-title="name"
+          item-value="id"
+          persistent-hint
+          return-object
+          single-line
+          variant="solo-filled"
+          no-data-text="Сначала выберите факультет"
+      />
 
       <v-text-field
           v-model="form.email"

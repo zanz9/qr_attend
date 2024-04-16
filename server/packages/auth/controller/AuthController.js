@@ -1,6 +1,7 @@
 const {validationResult} = require("express-validator");
 const AuthService = require("../service/AuthService");
 const ApiError = require("../../../exceptions/ApiError");
+const UserDto = require("../../../dto/UserDto");
 
 class AuthController {
     async register(req, res, next) {
@@ -9,8 +10,8 @@ class AuthController {
             if (!errors.isEmpty()) {
                 return next(ApiError.BadRequest('Неправильно переданы данные', errors.array()))
             }
-            const {email, firstName, lastName, password} = req.body
-            const userData = await AuthService.register(email, firstName, lastName, password)
+            const {email, firstName, lastName, password, opId} = req.body
+            const userData = await AuthService.register(email, firstName, lastName, password, opId)
             res.cookie('refreshToken', userData.refreshToken, {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true})
             return res.status(200).json({...userData, message: 'Регистрация прошла успешно'})
         } catch (e) {
@@ -46,6 +47,17 @@ class AuthController {
             const userData = await AuthService.refresh(refreshToken)
             res.cookie('refreshToken', userData.refreshToken, {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true})
             return res.status(200).json(userData)
+        } catch (e) {
+            next(e)
+        }
+    }
+
+    async getMe(req, res, next) {
+        try {
+            const user = req.user
+            const userData = await AuthService.getUserById(user.id)
+            const userDto = new UserDto(userData)
+            return res.status(200).json(userDto)
         } catch (e) {
             next(e)
         }

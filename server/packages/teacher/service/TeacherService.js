@@ -3,16 +3,20 @@ const {PrismaClient} = require("@prisma/client");
 class TeacherService {
     prisma = new PrismaClient()
     userDB = this.prisma.users
-
     async getTeachers() {
         return this.userDB.findMany({
             where: {
-                isTeacher: true
+                teacherId: {
+                    not: null
+                }
             },
-            select: {
-                id: true,
-                firstName: true,
-                lastName: true
+        });
+    }
+
+    async getTeacher(id) {
+        return this.userDB.findUnique({
+            where: {
+                id
             }
         });
     }

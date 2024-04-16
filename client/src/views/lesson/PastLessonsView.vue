@@ -1,10 +1,14 @@
 <script setup>
 
 import api from "@/axios/api.js";
-import {onMounted, ref, watch} from "vue";
+import {onMounted, reactive, ref, watch} from "vue";
 import {mdiArrowRight, mdiMenuLeft, mdiMenuRight} from "@mdi/js";
 
-const lessons = ref([])
+const lessons = reactive({
+  past: [],
+  count: 0,
+  maxPage: 0,
+})
 const page = ref(1)
 
 onMounted(fetchLessons)
@@ -20,11 +24,13 @@ async function fetchLessons() {
       'Authorization': 'Bearer ' + localStorage.getItem('accessToken')
     }
   })
-  data.forEach(l => {
+  data.lessons.forEach(l => {
     l.startedAt = new Date(l.startedAt).toLocaleString()
     l.expiresIn = new Date(l.expiresIn).toLocaleString()
   })
-  lessons.value = data
+  lessons.past = data.lessons
+  lessons.count = data.count
+  lessons.maxPage = Math.floor(data.count / 10) + 1
 }
 
 </script>
@@ -32,7 +38,7 @@ async function fetchLessons() {
 <template>
   <h2>Прошедшие уроки</h2>
   <v-list-item
-      v-for="l in lessons"
+      v-for="l in lessons.past"
       :key="l.uuid"
       :subtitle="`${l.startedAt} - ${l.expiresIn}`"
       :title="l.name"
@@ -48,7 +54,7 @@ async function fetchLessons() {
   <v-pagination
       rounded
       v-model="page"
-      :length="4"
+      :length="lessons.maxPage"
       :prev-icon="mdiMenuLeft"
       :next-icon="mdiMenuRight"
   />

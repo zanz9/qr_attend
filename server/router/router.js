@@ -2,7 +2,11 @@ const {body} = require("express-validator");
 const AuthController = require("../packages/auth/controller/AuthController");
 const LessonController = require("../packages/lesson/controller/LessonController");
 const TeacherController = require("../packages/teacher/controller/TeacherController");
+const StudentController = require("../packages/teacher/controller/StudentController");
+const OPContoller = require("../packages/teacher/controller/OPContoller");
+
 const Router = require('express').Router
+const authMiddleware = require('../packages/auth/middleware/authMiddleware')
 
 const router = Router()
 
@@ -19,14 +23,22 @@ router.post('/login',
     AuthController.login)
 router.get('/logout', AuthController.logout)
 router.get('/refresh', AuthController.refresh)
+router.get('/me', authMiddleware, AuthController.getMe)
 
-// TEACHER
-router.get('/teachers', TeacherController.getTeachers)
+router.get('/faculties', OPContoller.getFaculties)
+router.get('/op', OPContoller.getOPs)
 
-// LESSONS
+const roles = Router()
+roles.get('/teachers', TeacherController.getTeachers)
+roles.get('/students', StudentController.getStudents)
+
+router.use('/roles', roles)
+
+
 const lessonRouter = Router()
 lessonRouter.post('/',
     body('name').isLength({min: 2, max: 32}),
+    body('cabinet'),
     body('teacherId').isNumeric(),
     body('startDate').isISO8601().toDate(),
     body('endDate').isISO8601().toDate(),
@@ -37,11 +49,12 @@ lessonRouter.get('/now', LessonController.getLessonNow)
 lessonRouter.get('/future', LessonController.getLessonsFuture)
 lessonRouter.get('/past', LessonController.getLessonsPast)
 
-lessonRouter.get('/:uuid', LessonController.getLesson)
+lessonRouter.get('/op', OPContoller.getOPs)
 lessonRouter.get('/', LessonController.scan)
+lessonRouter.get('/test', LessonController.scan)
 
+lessonRouter.get('/:uuid', LessonController.getLesson)
 
-const authMiddleware = require('../packages/auth/middleware/authMiddleware')
-router.use('/lesson',  lessonRouter)
+router.use('/lesson', authMiddleware, lessonRouter)
 
 module.exports = router

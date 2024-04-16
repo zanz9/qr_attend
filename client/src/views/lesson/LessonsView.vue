@@ -4,9 +4,18 @@ import api from "@/axios/api.js";
 import {mdiArrowRight, mdiMenuLeft, mdiMenuRight} from "@mdi/js";
 import Logger from "@/logger.js";
 
+const role = reactive({
+  isAdmin: JSON.parse(localStorage.getItem('isAdmin') )|| false,
+  isTeacher: JSON.parse(localStorage.getItem('isTeacher')) || false,
+  isStudent: JSON.parse(localStorage.getItem('isStudent')) || false,
+})
+
 const lessons = reactive({
   now: [],
+  nowCount: 0,
   future: [],
+  futureCount: 0,
+  futureMaxPage: 0,
 })
 const page = ref(1)
 
@@ -25,11 +34,11 @@ async function fetchNow() {
       'Authorization': 'Bearer ' + localStorage.getItem('accessToken')
     }
   })
-  now.forEach(l => {
+  now.lessons.forEach(l => {
     l.startedAt = new Date(l.startedAt).toLocaleString()
     l.expiresIn = new Date(l.expiresIn).toLocaleString()
   })
-  lessons.now = now
+  lessons.now = now.lessons
 }
 
 async function fetchFuture() {
@@ -42,11 +51,13 @@ async function fetchFuture() {
       'Authorization': 'Bearer ' + localStorage.getItem('accessToken')
     }
   })
-  future.forEach(l => {
+  future.lessons.forEach(l => {
     l.startedAt = new Date(l.startedAt).toLocaleString()
     l.expiresIn = new Date(l.expiresIn).toLocaleString()
   })
-  lessons.future = future
+  lessons.future = future.lessons
+  lessons.futureCount = future.count
+  lessons.futureMaxPage = Math.floor(future.count / 10) + 1
 }
 
 watch(page, fetchFuture)
@@ -59,10 +70,10 @@ watch(page, fetchFuture)
       :key="l.uuid"
       :subtitle="`${l.startedAt} - ${l.expiresIn}`"
       :title="l.name"
-      :to="`/lesson/${l.uuid}`"
+      :to="role.isStudent ? null : `/lesson/${l.uuid}`"
   >
     <template v-slot:append>
-      <v-btn
+      <v-btn v-if="!role.isStudent"
           color="grey-lighten-1"
           :icon="mdiArrowRight"
           variant="text"
@@ -81,7 +92,7 @@ watch(page, fetchFuture)
   <v-pagination
       rounded
       v-model="page"
-      :length="4"
+      :length="lessons.futureMaxPage"
       :prev-icon="mdiMenuLeft"
       :next-icon="mdiMenuRight"
   />

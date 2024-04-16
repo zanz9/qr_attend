@@ -5,13 +5,15 @@ class LessonService {
     prisma = new PrismaClient()
     lessonDB = this.prisma.lessons
 
-    async create(name, teacherId, startedAt, expiresIn) {
+    async create(name, cabinet, teacherId, startedAt, expiresIn, opId) {
         return this.lessonDB.create({
             data: {
                 name,
+                cabinet,
                 createdFrom: teacherId,
                 startedAt,
-                expiresIn
+                expiresIn,
+                opId
             }
         });
     }
@@ -24,114 +26,100 @@ class LessonService {
         })
     }
 
-    async getLessonsFuture(skip, take) {
-        return this.lessonDB.findMany({
-            where: {
-                startedAt: {
-                    gte: new Date()
-                }
-            },
-            orderBy: [
-                {
-                    startedAt: 'asc'
-                },
-                {
-                    expiresIn: 'asc'
-                }
-            ],
+    async getLessonsOP(type, skip, take, opId) {
+        let where;
+        if (type === 'future') {
+            where = {AND: [{startedAt: {gte: new Date()}, opId}]}
+        } else if (type === 'now') {
+            where = {AND: [{startedAt: {lte: new Date()}, opId}, {expiresIn: {gte: new Date()}}]}
+        } else if (type === 'past') {
+            where = {AND: [{expiresIn: {lte: new Date()}, opId}]}
+        }
+        const count = await this.lessonDB.count({where})
+        const lessons = await this.lessonDB.findMany({
+            where,
+            orderBy: [{
+                startedAt: 'asc'
+            }, {
+                expiresIn: 'asc'
+            }],
             include: {
-                teacher: {
-                    select: {
-                        firstName: true,
-                        lastName: true
-                    }
-                },
+                teacher: {select: {firstName: true, lastName: true}},
                 attends: false
             },
             take: take ? take : 100,
             skip: skip ? skip : 0,
         })
+        return {count, lessons}
     }
 
-    async getLessonNow(skip, take) {
-        return this.lessonDB.findMany({
-            where: {
+    async getLessonsFaculty(type, skip, take, facultyId) {
+        let where;
+        if (type === 'future') {
+            where = {
                 AND: [{
-                    startedAt: {
-                        lte: new Date()
-                    },
-                }, {
-                    expiresIn: {
-                        gte: new Date()
-                    }
-                },]
-            },
-            orderBy: [
-                {
-                    startedAt: 'asc'
-                },
-                {
-                    expiresIn: 'asc'
-                },
-            ],
+                    startedAt: {gte: new Date()},
+                    op: {facultyId}
+                }]
+            }
+        } else if (type === 'now') {
+            where = {AND: [{startedAt: {lte: new Date()}, op: {facultyId}}, {expiresIn: {gte: new Date()}}]}
+        } else if (type === 'past') {
+            where = {AND: [{expiresIn: {lte: new Date()}, op: {facultyId}}]}
+        }
+        const count = await this.lessonDB.count({
+            where: where
+        })
+        const lessons = await this.lessonDB.findMany({
+            where,
+            orderBy: [{
+                startedAt: 'asc'
+            }, {
+                expiresIn: 'asc'
+            }],
             include: {
-                teacher: {
-                    select: {
-                        firstName: true,
-                        lastName: true
-                    }
-                },
+                teacher: {select: {firstName: true, lastName: true}},
                 attends: false
             },
             take: take ? take : 100,
             skip: skip ? skip : 0,
         })
+        return {count, lessons}
     }
 
-    async getLessonsPast(skip, take) {
-        return this.lessonDB.findMany({
-            where: {
-                expiresIn: {
-                    lte: new Date()
-                }
-            },
-            orderBy: [
-                {
-                    expiresIn: 'desc'
-                },
-                {
-                    startedAt: 'desc'
-                }
-            ],
+    async getLessons(type, skip, take) {
+        let where;
+        if (type === 'future') {
+            where = {AND: [{startedAt: {gte: new Date()},}]}
+        } else if (type === 'now') {
+            where = {AND: [{startedAt: {lte: new Date()}}, {expiresIn: {gte: new Date()}}]}
+        } else if (type === 'past') {
+            where = {AND: [{expiresIn: {lte: new Date()}}]}
+        }
+        const count = await this.lessonDB.count({
+            where: where
+        })
+        const lessons = await this.lessonDB.findMany({
+            where,
+            orderBy: [{
+                startedAt: 'asc'
+            }, {
+                expiresIn: 'asc'
+            }],
             include: {
-                teacher: {
-                    select: {
-                        firstName: true,
-                        lastName: true
-                    }
-                },
+                teacher: {select: {firstName: true, lastName: true}},
                 attends: false
             },
             take: take ? take : 100,
             skip: skip ? skip : 0,
         })
+        return {count, lessons}
     }
 
     async getLesson(uuid) {
         return this.lessonDB.findUnique({
             where: {
                 uuid,
-                AND: [
-                    {
-                        startedAt: {
-                            lte: new Date()
-                        },
-                    }, {
-                        expiresIn: {
-                            gte: new Date()
-                        }
-                    },
-                ]
             },
             include: {
                 teacher: {
@@ -150,6 +138,15 @@ class LessonService {
                         },
                         lesson: false
                     }
+                },
+                op: {
+                    include: {
+                        faculty: {
+                            select: {
+                                name: true
+                            }
+                        }
+                    }
                 }
             }
         })
@@ -164,8 +161,9 @@ class LessonService {
         if (!user || user.isTeacher) {
             throw ApiError.BadRequest('User not found')
         }
+        const loginTime = new Date()
         return this.prisma.attends.create({
-            data: {lessonId, userId}
+            data: {lessonId, userId, loginTime}
         })
     }
 }

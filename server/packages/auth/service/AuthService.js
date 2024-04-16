@@ -8,12 +8,18 @@ class AuthService {
     prisma = new PrismaClient()
     userDB = this.prisma.users
 
-    async register(email, firstName, lastName, password) {
+    async register(email, firstName, lastName, password, opId) {
         const candidate = await this.userDB.findFirst({where: {email}})
         if (candidate) {
             throw ApiError.BadRequest(`Пользователь с почтовый адресом ${email} уже существует`)
         }
         const hashPassword = await bcrypt.hash(password, 3)
+
+        const student = await this.prisma.student.findFirst({
+            where: {
+                opId
+            }
+        })
 
         const user = await this.userDB.create({
             data: {
@@ -21,6 +27,7 @@ class AuthService {
                 password: hashPassword,
                 firstName,
                 lastName,
+                studentId: student.id
             }
         })
 
@@ -56,6 +63,22 @@ class AuthService {
             throw ApiError.UnauthorizedError()
         }
         return await TokenService.refreshToken(refreshToken)
+    }
+
+    async getUserById(userId) {
+        return this.prisma.users.findFirst({
+            where: {
+                id: userId
+            },
+            include: {
+                teacher: {
+                    include: {
+                        faculty: true
+                    }
+                },
+                student: true
+            }
+        });
     }
 }
 

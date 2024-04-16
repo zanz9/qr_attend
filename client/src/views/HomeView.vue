@@ -4,9 +4,27 @@ import {RouterNames} from "@/router/routes.js";
 import router from "@/router/index.js";
 import Logger from "@/logger.js";
 import {mdiMenu} from "@mdi/js";
-import {reactive, ref} from "vue";
+import {nextTick, onMounted, reactive, ref} from "vue";
 
 const logoutBtnClicked = ref(false)
+
+const role = reactive({
+  isAdmin: JSON.parse(localStorage.getItem('isAdmin') )|| false,
+  isTeacher: JSON.parse(localStorage.getItem('isTeacher')) || false,
+  isStudent: JSON.parse(localStorage.getItem('isStudent')) || true,
+})
+
+onMounted(async () => {
+  const {data} = await api.get('/me', {
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+    }
+  })
+  localStorage.setItem('isAdmin', data.isAdmin)
+  localStorage.setItem('isTeacher', data.teacher != null)
+  localStorage.setItem('isStudent', data.student != null)
+  await nextTick()
+})
 
 async function logout() {
   logoutBtnClicked.value = true
@@ -34,7 +52,9 @@ const drawer = ref(false)
 
     <v-navigation-drawer v-model="drawer" temporary>
       <v-divider class="pb-2"/>
-      <v-list-item link :to="{name: RouterNames.CreateLesson}" title="Создать Урок"></v-list-item>
+
+      <v-list-item v-if="role.isTeacher || role.isAdmin" link :to="{name: RouterNames.CreateLesson}"
+                   title="Создать Урок"></v-list-item>
       <v-list-item link :to="{name: RouterNames.Lessons}" title="Список уроков"></v-list-item>
       <v-list-item link :to="{name: RouterNames.PastLesson}" title="Прошлые уроки"></v-list-item>
 

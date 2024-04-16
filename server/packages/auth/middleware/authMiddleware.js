@@ -21,6 +21,6 @@ module.exports = async function (req, res, next) {
         req.user = userData
         next()
     } catch (e) {
-        return next(ApiError.Forbidden())
+        return next(e)
     }
 }
