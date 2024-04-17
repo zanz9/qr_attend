@@ -13,7 +13,7 @@ import '@vuepic/vue-datepicker/dist/main.css'
 
 const vuetify = createVuetify({
     theme: {
-        defaultTheme: 'dark'
+        defaultTheme: 'light'
     },
     icons: {
         defaultSet: 'mdi',

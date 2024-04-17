@@ -3,7 +3,6 @@ const {validationResult} = require("express-validator");
 const LessonService = require("../service/LessonService");
 const TokenService = require("../../auth/service/TokenService");
 const AuthService = require("../../auth/service/AuthService");
-const TeacherService = require("../../teacher/service/TeacherService");
 
 class LessonController {
     async create(req, res, next) {
@@ -134,15 +133,19 @@ class LessonController {
             const lessonId = req.query.uuid
             const refreshToken = req.cookies.refreshToken
             if (!refreshToken) {
-                return next(ApiError.Forbidden("Не авторизирован"))
+                next(ApiError.Forbidden("Не авторизирован"))
+                return res.redirect(process.env.CLIENT_URL)
             }
             const userData = TokenService.validateRefreshToken(refreshToken)
             const userId = userData.id
             const lesson = await LessonService.scan(lessonId, userId)
-            if(!lesson) {
-                return res.json({message: 'Вы уже отсканировали этот урок'})
+            if (!lesson) {
+                // res.json({message: 'Вы уже отсканировали этот урок'})
+                return res.redirect(process.env.CLIENT_URL)
             }
-            return res.json({message: 'Сканер отсканировал урок'})
+            // res.json({message: 'Сканер отсканировал урок'})
+
+            return res.redirect(process.env.CLIENT_URL)
         } catch (e) {
             next(e)
         }

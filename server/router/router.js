@@ -1,9 +1,9 @@
 const {body} = require("express-validator");
 const AuthController = require("../packages/auth/controller/AuthController");
 const LessonController = require("../packages/lesson/controller/LessonController");
-const TeacherController = require("../packages/teacher/controller/TeacherController");
-const StudentController = require("../packages/teacher/controller/StudentController");
-const OPContoller = require("../packages/teacher/controller/OPContoller");
+const TeacherController = require("../packages/roles/controller/TeacherController");
+const StudentController = require("../packages/roles/controller/StudentController");
+const OPContoller = require("../packages/roles/controller/OPContoller");
 
 const Router = require('express').Router
 const authMiddleware = require('../packages/auth/middleware/authMiddleware')

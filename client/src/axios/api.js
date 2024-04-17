@@ -5,8 +5,8 @@ import {rmInfo} from "@/infoParser.js";
 
 const api = axios.create({
     withCredentials: true,
-    baseURL: 'http://localhost:3000/api',
-    // baseURL: 'http://58252.zetalink.ru:3000/api',
+    // baseURL: 'http://localhost:3000/api',
+    baseURL: 'http://58252.zetalink.ru:3000/api',
 })
 
 api.interceptors.response.use(response => {
