@@ -20,12 +20,13 @@ model Users {
   firstName String
   lastName String
   refreshToken String? @db.VarChar(255)
-  teacherId Int?
-  studentId Int?
+  teacherId Int? @unique
+  studentId Int? @unique
   isAdmin Boolean @default(false)
 
   teacher Teacher? @relation(fields: [teacherId], references: [id])
   student Student? @relation(fields: [studentId], references: [id])
+
   lessons Lessons[]
   attends Attends[]
 }
@@ -35,7 +36,7 @@ model Teacher {
   facultyId Int
 
   faculty Faculty @relation(fields: [facultyId], references: [id])
-  users Users[]
+  users Users?
 }
 
 model Student {
@@ -44,7 +45,7 @@ model Student {
   course Int @default(1)
 
   op OP @relation(fields: [opId], references: [id])
-  users Users[]
+  user Users?
 }
 
 model Faculty {
@@ -70,6 +71,7 @@ model Lessons {
   name String
   cabinet String
   opId Int
+  course Int @default(1) // TODO
   createdFrom Int
   startedAt DateTime
   expiresIn DateTime

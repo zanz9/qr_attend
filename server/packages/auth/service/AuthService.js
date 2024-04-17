@@ -15,9 +15,10 @@ class AuthService {
         }
         const hashPassword = await bcrypt.hash(password, 3)
 
-        const student = await this.prisma.student.findFirst({
-            where: {
-                opId
+        const student = await this.prisma.student.create({
+            data: {
+                opId,
+                course: 1
             }
         })
 

@@ -40,7 +40,7 @@ onMounted(async () => {
 watch(faculty, async () => {
   const {data} = await api.get('/op', {
     params: {
-      facultyId: faculty.id
+      facultyId: faculty.value.id
     }
   })
   ops.value = data

@@ -1,27 +1,26 @@
 <script setup>
 
-import {onMounted, reactive, ref} from "vue";
+import {onMounted, reactive, ref, watch} from "vue";
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css'
 import api from "@/axios/api.js";
 import Logger from "@/logger.js";
+import {getInfo, isAdmin, isTeacher} from "@/infoParser.js";
+import {mdiMenuDown} from "@mdi/js";
 
-const role = reactive({
-  isAdmin: JSON.parse(localStorage.getItem('isAdmin')) || false,
-  isTeacher: JSON.parse(localStorage.getItem('isTeacher')) || false,
-  isStudent: JSON.parse(localStorage.getItem('isStudent')) || true,
-})
+const loading = ref(false)
+const info = ref({})
 
 const form = reactive({
   name: '',
-  teacher: {firstName: 'Выберите', lastName: 'учителя'},
-  op: {name: 'Выберите программу'},
   date: [],
   cabinet: '',
 })
 
 const teachers = ref([])
-const op = ref([])
+const teacher = ref({firstName: 'Выберите', lastName: 'учителя'})
+const ops = ref([])
+const op = ref({name: 'Выберите программу'})
 
 function itemProps(item) {
   return {
@@ -30,6 +29,7 @@ function itemProps(item) {
 }
 
 onMounted(async () => {
+  info.value = await getInfo()
   const {data} = await api.get('/roles/teachers',
       {
         headers: {
@@ -39,14 +39,22 @@ onMounted(async () => {
   )
   teachers.value = data
 
-  const {data: opData} = await api.get('/lesson/op', {
-    headers: {
-      'Authorization': 'Bearer ' + localStorage.getItem('accessToken')
+  if (isTeacher(info.value)) {
+    teacher.value = info.value
+  }
+  loading.value = true
+})
+
+watch(teacher, async () => {
+  const {data} = await api.get('/op', {
+    params: {
+      facultyId: teacher.value.teacher.faculty.id
     }
   })
-  console.log(opData)
-  op.value = opData
+  console.log(data)
+  ops.value = data
 })
+
 
 const snackbar = reactive({
   show: false,
@@ -66,11 +74,11 @@ async function create() {
   const endDate = form.date[1]
   const {data} = await api.post('/lesson', {
         name: form.name,
-        teacherId: role.isTeacher ? 0 : form.teacher.id,
+        teacherId: teacher.value.id,
         startDate,
         endDate,
         cabinet: form.cabinet,
-        opId: form.op.id
+        opId: op.value.id
       },
       {
         headers: {
@@ -94,28 +102,31 @@ async function create() {
       label="Кабинет"
       variant="solo-filled"/>
   <v-select
-      v-model="form.op"
-      :items="op"
+      v-if="isAdmin(info)"
+      v-model="teacher"
+      :items="teachers"
+      :item-props="itemProps"
+      item-title="firstName"
+      item-value="id"
+      label="Выберите учителя"
+      persistent-hint
+      return-object
+      single-line
+      variant="solo-filled"
+      :menu-icon="mdiMenuDown"
+  />
+
+  <v-select
+      v-model="op"
+      :items="ops"
       item-title="name"
       item-value="id"
       persistent-hint
       return-object
       single-line
       variant="solo-filled"
-  />
-
-  <v-select
-      v-if="role.isAdmin"
-      v-model="form.teacher"
-      :items="teachers"
-      :item-props="itemProps"
-      item-title="firstName"
-      item-value="id"
-      label="Выберите учителя!"
-      persistent-hint
-      return-object
-      single-line
-      variant="solo-filled"
+      :menu-icon="mdiMenuDown"
+      no-data-text="Сначала выберите учителя"
   />
   <VueDatePicker
       dark

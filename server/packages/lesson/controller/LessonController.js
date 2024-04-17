@@ -139,7 +139,10 @@ class LessonController {
             const userData = TokenService.validateRefreshToken(refreshToken)
             const userId = userData.id
             const lesson = await LessonService.scan(lessonId, userId)
-            return res.json(lesson)
+            if(!lesson) {
+                return res.json({message: 'Вы уже отсканировали этот урок'})
+            }
+            return res.json({message: 'Сканер отсканировал урок'})
         } catch (e) {
             next(e)
         }

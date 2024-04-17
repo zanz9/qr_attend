@@ -4,35 +4,27 @@ import {RouterNames} from "@/router/routes.js";
 import router from "@/router/index.js";
 import Logger from "@/logger.js";
 import {mdiMenu} from "@mdi/js";
-import {nextTick, onMounted,  ref} from "vue";
-import {isAdmin, isTeacher} from "@/infoParser.js";
+import {onMounted, ref} from "vue";
+import {getInfo, isAdmin, isTeacher, rmInfo} from "@/infoParser.js";
+
+const loading = ref(true)
 
 const logoutBtnClicked = ref(false)
-
-const info = ref({
-  firstName: '',
-  lastName: '',
-})
+const info = ref()
 
 onMounted(async () => {
-  const {data} = await api.get('/me', {
-    headers: {
-      'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-    }
-  })
-  info.value = data
-  localStorage.setItem('info', JSON.stringify(data))
+  info.value = await getInfo()
+  loading.value = false
 })
 
 async function logout() {
   logoutBtnClicked.value = true
   try {
-    const {data} = await api.get('/logout')
-    Logger.log(data)
+    await api.get('/logout')
     localStorage.removeItem('accessToken')
+    rmInfo()
     await router.push({name: RouterNames.Login})
   } catch (e) {
-    Logger.log(e)
   }
   logoutBtnClicked.value = false
 }
@@ -47,8 +39,7 @@ const drawer = ref(false)
       <v-app-bar-nav-icon :icon="mdiMenu" @click="drawer = !drawer"/>
       <v-app-bar-title>QR Attend</v-app-bar-title>
     </v-app-bar>
-
-    <v-navigation-drawer v-model="drawer" temporary>
+    <v-navigation-drawer v-model="drawer" temporary v-if="!loading">
       <v-list-item nav class="py-4 px-4" :to="{name: RouterNames.Profile}">
         <v-avatar color="red" size="32" class="mr-2">
           <span>{{ info.lastName[0] }}{{ info.firstName[0] }}</span>
@@ -57,10 +48,16 @@ const drawer = ref(false)
       </v-list-item>
       <v-divider class="pb-2"/>
 
-      <v-list-item v-if="isTeacher() || isAdmin()" link :to="{name: RouterNames.CreateLesson}"
+      <v-list-item v-if="isTeacher(info) || isAdmin(info)" link :to="{name: RouterNames.CreateLesson}"
                    title="Создать Урок"></v-list-item>
       <v-list-item link :to="{name: RouterNames.Lessons}" title="Список уроков"></v-list-item>
       <v-list-item link :to="{name: RouterNames.PastLesson}" title="Прошлые уроки"></v-list-item>
+
+      <div v-if="isAdmin(info)">
+        <v-list-item link :to="{name: RouterNames.CreateFaculty}" title="Добавить факультет"></v-list-item>
+        <v-list-item link :to="{name: RouterNames.CreateOP}" title="Добавить ОП"></v-list-item>
+        <v-list-item link :to="{name: RouterNames.CreateTeacher}" title="Создать аккаунт учителя"></v-list-item>
+      </div>
 
       <template v-slot:append>
         <div class="pa-2">

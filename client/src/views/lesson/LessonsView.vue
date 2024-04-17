@@ -2,7 +2,6 @@
 import {onMounted, reactive, ref, watch} from "vue";
 import api from "@/axios/api.js";
 import {mdiArrowRight, mdiMenuLeft, mdiMenuRight} from "@mdi/js";
-import Logger from "@/logger.js";
 
 const role = reactive({
   isAdmin: JSON.parse(localStorage.getItem('isAdmin') )|| false,

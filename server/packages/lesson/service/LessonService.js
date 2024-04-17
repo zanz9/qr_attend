@@ -156,10 +156,38 @@ class LessonService {
         const user = await this.prisma.users.findUnique({
             where: {
                 id: userId
+            },
+            include: {
+                student: true
             }
         })
         if (!user || user.isTeacher) {
             throw ApiError.BadRequest('User not found')
+        }
+        //where = {AND: [{startedAt: {lte: new Date()}}, {expiresIn: {gte: new Date()}}]}
+        const lesson = await this.lessonDB.findFirst({
+            where: {
+                AND: [
+                    {startedAt: {lte: new Date()}},
+                    {expiresIn: {gte: new Date()}},
+                    {
+                        uuid: lessonId,
+                        course: user.student.course
+                    }]
+            }
+        })
+        if (!lesson) {
+            throw ApiError.BadRequest('Урока нет')
+        }
+
+        const isLoggedIn = await this.prisma.attends.findFirst({
+            where: {
+                lessonId,
+                userId
+            }
+        })
+        if (isLoggedIn) {
+            return null
         }
         const loginTime = new Date()
         return this.prisma.attends.create({

@@ -26,15 +26,19 @@ router.get('/refresh', AuthController.refresh)
 router.get('/me', authMiddleware, AuthController.getMe)
 
 router.get('/faculties', OPContoller.getFaculties)
+router.post('/faculty', authMiddleware, OPContoller.createFaculty)
 router.get('/op', OPContoller.getOPs)
+router.post('/op', authMiddleware, OPContoller.create)
 
 const roles = Router()
 roles.get('/teachers', TeacherController.getTeachers)
+roles.put('/teacher', authMiddleware, TeacherController.changeFaculty)
+roles.post('/teacher', authMiddleware, TeacherController.create)
 roles.get('/students', StudentController.getStudents)
 
 router.use('/roles', roles)
 
-
+router.get('/scan', LessonController.scan)
 const lessonRouter = Router()
 lessonRouter.post('/',
     body('name').isLength({min: 2, max: 32}),
@@ -50,8 +54,6 @@ lessonRouter.get('/future', LessonController.getLessonsFuture)
 lessonRouter.get('/past', LessonController.getLessonsPast)
 
 lessonRouter.get('/op', OPContoller.getOPs)
-lessonRouter.get('/', LessonController.scan)
-lessonRouter.get('/test', LessonController.scan)
 
 lessonRouter.get('/:uuid', LessonController.getLesson)
 

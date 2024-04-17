@@ -6,6 +6,10 @@ import LessonsView from "@/views/lesson/LessonsView.vue";
 import LessonView from "@/views/lesson/LessonView.vue";
 import PastLessonsView from "@/views/lesson/PastLessonsView.vue";
 import ProfileView from "@/views/profile/ProfileView.vue";
+import CreateOPView from "@/views/admin/CreateOPView.vue";
+import CreateFacultyView from "@/views/admin/CreateFacultyView.vue";
+import CreateTeacher from "@/views/admin/CreateTeacher.vue";
+import {getInfo, isAdmin} from "@/infoParser.js";
 
 export class RouterNames {
     static Login = 'Login'
@@ -16,6 +20,9 @@ export class RouterNames {
     static Lesson = 'Lesson'
     static PastLesson = 'PastLesson'
     static Profile = 'Profile'
+    static CreateOP = 'CreateOP'
+    static CreateFaculty = 'CreateFaculty'
+    static CreateTeacher = 'CreateTeacher'
 }
 
 export const routeList = [
@@ -26,17 +33,17 @@ export const routeList = [
         redirect: {name: RouterNames.Lessons},
         children: [
             {
-                path: 'create-lesson',
+                path: '/create-lesson',
                 name: RouterNames.CreateLesson,
                 component: CreateLessonView
             },
             {
-                path: 'lessons',
+                path: '/lessons',
                 name: RouterNames.Lessons,
                 component: LessonsView
             },
             {
-                path: 'lesson/:uuid',
+                path: '/lesson/:uuid',
                 name: RouterNames.Lesson,
                 component: LessonView
             },
@@ -49,6 +56,24 @@ export const routeList = [
                 path: '/profile',
                 name: RouterNames.Profile,
                 component: ProfileView
+            },
+            {
+                path: '/create-op',
+                name: RouterNames.CreateOP,
+                component: CreateOPView,
+                guard: isAdmin(getInfo())
+            },
+            {
+                path: '/create-faculty',
+                name: RouterNames.CreateFaculty,
+                component: CreateFacultyView,
+                guard: isAdmin(getInfo())
+            },
+            {
+                path: '/create-teacher',
+                name: 'CreateTeacher',
+                component: CreateTeacher,
+                guard: isAdmin(getInfo())
             }
         ]
     },

@@ -1,11 +1,12 @@
 import axios from 'axios'
 import {RouterNames} from "@/router/routes.js";
 import router from "@/router/index.js";
+import {rmInfo} from "@/infoParser.js";
 
 const api = axios.create({
     withCredentials: true,
     baseURL: 'http://localhost:3000/api',
-    // baseURL: 'http://95.141.205.61:3000/api',
+    // baseURL: 'http://58252.zetalink.ru:3000/api',
 })
 
 api.interceptors.response.use(response => {
@@ -21,6 +22,7 @@ api.interceptors.response.use(response => {
     }
     if (error.response.status === 401) {
         localStorage.removeItem('accessToken')
+        rmInfo()
         router.push({ name: RouterNames.Login }).then(() => {
         })
     }

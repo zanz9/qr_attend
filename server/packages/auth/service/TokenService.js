@@ -2,6 +2,7 @@ const jwt = require("jsonwebtoken")
 const {PrismaClient} = require("@prisma/client");
 const ApiError = require("../../../exceptions/ApiError");
 const UserDto = require("../../../dto/UserDto");
+const {TokenExpiredError} = require("jsonwebtoken");
 
 class TokenService {
     prisma = new PrismaClient()
@@ -15,15 +16,24 @@ class TokenService {
     }
 
     validateAccessToken(token) {
-        const userData = jwt.verify(token, process.env.JWT_ACCESS_SECRET)
-        return new UserDto(userData)
+        try {
+            const userData = jwt.verify(token, process.env.JWT_ACCESS_SECRET)
+            return new UserDto(userData)
+        } catch (e) {
+            if (e instanceof TokenExpiredError) {
+                throw ApiError.Forbidden("Срок действия токена истек")
+            }
+            throw e
+        }
     }
 
     validateRefreshToken(token) {
         try {
             const userData = jwt.verify(token, process.env.JWT_REFRESH_SECRET)
+            console.log(userData)
             return new UserDto(userData)
         } catch (e) {
+            console.log(e)
             return null
         }
     }
