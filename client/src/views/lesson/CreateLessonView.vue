@@ -129,7 +129,6 @@ async function create() {
       no-data-text="Сначала выберите учителя"
   />
   <VueDatePicker
-      dark
       :range="{partialRange:false}"
       v-model="form.date"
       month-name-format="short"

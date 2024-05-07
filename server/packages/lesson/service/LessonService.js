@@ -161,7 +161,7 @@ class LessonService {
                 student: true
             }
         })
-        if (!user || user.isTeacher) {
+        if (!user || user.teacherId != null) {
             throw ApiError.BadRequest('User not found')
         }
         //where = {AND: [{startedAt: {lte: new Date()}}, {expiresIn: {gte: new Date()}}]}

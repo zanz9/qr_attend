@@ -1,5 +1,5 @@
 <script setup>
-import {getInfo, isAdmin, isTeacher} from "@/infoParser.js";
+import {getInfo, isAdmin, isStudent, isTeacher} from "@/infoParser.js";
 import {onMounted, ref} from "vue";
 const loading = ref(true)
 const info = ref({})
@@ -23,6 +23,11 @@ onMounted(async () => {
     <div v-if="isAdmin(info)">Админский аккаунт</div>
     <div v-if="isTeacher(info)">
       <div>{{info.teacher.faculty.name}}</div>
+    </div>
+    <div v-if="isStudent(info)">
+      <div>{{info.student.op.faculty.name}}</div>
+      <div>{{info.student.op.name}}</div>
+      <div>Курс: {{info.student.course}}</div>
     </div>
 
   </v-container>

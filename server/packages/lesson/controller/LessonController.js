@@ -139,15 +139,10 @@ class LessonController {
             const userData = TokenService.validateRefreshToken(refreshToken)
             const userId = userData.id
             const lesson = await LessonService.scan(lessonId, userId)
-            if (!lesson) {
-                // res.json({message: 'Вы уже отсканировали этот урок'})
-                return res.redirect(process.env.CLIENT_URL)
-            }
-            // res.json({message: 'Сканер отсканировал урок'})
-
             return res.redirect(process.env.CLIENT_URL)
         } catch (e) {
-            next(e)
+            console.log(e)
+            return res.redirect(process.env.CLIENT_URL)
         }
     }
 }

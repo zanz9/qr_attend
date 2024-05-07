@@ -8,6 +8,9 @@ import {getInfo, isTeacher} from "@/infoParser.js";
 
 const route = useRoute()
 
+const showUrl = ref(false)
+const url = ref(`${api.getUri()}/scan?uuid=${route.params.uuid}`)
+
 const isLoaded = ref(false)
 const isLessonEnd = ref(false)
 const lesson = ref({})
@@ -82,6 +85,8 @@ onMounted(async () => {
                 render-as="svg"
             />
           </v-card>
+          <div v-if="isTeacher(info)" @click="showUrl = !showUrl" class="cursor-pointer mt-2"> {{ showUrl ? 'Скрыть' : 'Показать' }} ссылку</div>
+          <div v-if="showUrl">{{url}}</div>
         </div>
         <h3>Стунденты {{lesson.attends.length}}/{{students.length}}</h3>
         <div v-if="students.length">
@@ -101,7 +106,3 @@ onMounted(async () => {
     </v-col>
   </v-container>
 </template>
-
-<style scoped>
-
-</style>

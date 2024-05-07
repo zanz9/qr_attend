@@ -77,7 +77,15 @@ class AuthService {
                         faculty: true
                     }
                 },
-                student: true
+                student: {
+                    include: {
+                        op: {
+                            include: {
+                                faculty: true
+                            }
+                        }
+                    }
+                }
             }
         });
     }
